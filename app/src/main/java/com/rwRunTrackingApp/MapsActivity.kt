@@ -22,6 +22,7 @@ import kotlinx.android.synthetic.main.activity_maps.*
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListener {
 
   private lateinit var mMap: GoogleMap
+  var initialStepCount = -1
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -70,6 +71,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     sensorEvent ?: return
     sensorEvent.values.firstOrNull()?.let {
       Log.d("TAG", "Step count: $it ")
+      if (initialStepCount == -1) {
+        initialStepCount = it.toInt()
+      }
+      numberOfStepTextView.text = "Step count: ${it.toInt() - initialStepCount}"
     }
   }
 
