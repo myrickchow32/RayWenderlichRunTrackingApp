@@ -7,6 +7,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Looper
@@ -19,6 +20,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.PolylineOptions
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.activity_maps.*
 
@@ -27,6 +29,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
   private lateinit var mMap: GoogleMap
   var initialStepCount = -1
   lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+  val polylineOptions = PolylineOptions()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -111,9 +114,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
           locationResult.locations.forEach {
             Log.d("TAG", "New location got: (${it.latitude}, ${it.longitude})")
           }
+
+          addLocationToRoute(locationResult.locations)
         }
       }
       fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
     }
+  }
+
+  fun addLocationToRoute(locations: List<Location>) {
+    mMap.clear()
+    val originalLatLngList = polylineOptions.points
+    val latLngList = locations.map {
+      LatLng(it.latitude, it.longitude)
+    }
+    originalLatLngList.addAll(latLngList)
+    mMap.addPolyline(polylineOptions)
   }
 }
