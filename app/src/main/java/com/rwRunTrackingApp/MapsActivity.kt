@@ -27,12 +27,20 @@ import kotlinx.android.synthetic.main.activity_maps.*
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListener {
 
   private lateinit var mMap: GoogleMap
-  var initialStepCount = -1
+
   lateinit var fusedLocationProviderClient: FusedLocationProviderClient
   val polylineOptions = PolylineOptions()
-  var currentNumberOfStepCount = 0
-  var totalDistanceTravelled = 0f
   var lastKnownLocation: Location? = null
+  val KEY_SHARED_PREFERENCE = "com.rwRunTrackingApp.KEY_SHARED_PREFERENCE"
+  val KEY_INITIAL_STEP_COUNT = "com.rwRunTrackingApp.KEY_CURRENT_NUMBER_OF_STEP_COUNT"
+  val KEY_TOTAL_DISTANCE_TRAVELLED = "com.rwRunTrackingApp.KEY_TOTAL_DISTANCE_TRAVELLED"
+  var initialStepCount: Int
+    get() = this.getSharedPreferences(KEY_SHARED_PREFERENCE, Context.MODE_PRIVATE).getInt(KEY_INITIAL_STEP_COUNT, -1)
+    set(value) = this.getSharedPreferences(KEY_SHARED_PREFERENCE, Context.MODE_PRIVATE).edit().putInt(KEY_INITIAL_STEP_COUNT, value).apply()
+  var currentNumberOfStepCount = 0
+     var totalDistanceTravelled: Float
+    get() = this.getSharedPreferences(KEY_SHARED_PREFERENCE, Context.MODE_PRIVATE).getFloat(KEY_TOTAL_DISTANCE_TRAVELLED, 0f)
+    set(value) = this.getSharedPreferences(KEY_SHARED_PREFERENCE, Context.MODE_PRIVATE).edit().putFloat(KEY_TOTAL_DISTANCE_TRAVELLED, value).apply()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
