@@ -30,6 +30,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
   var initialStepCount = -1
   lateinit var fusedLocationProviderClient: FusedLocationProviderClient
   val polylineOptions = PolylineOptions()
+  var currentNumberOfStepCount = 0
+  var totalDistanceTravelled = 0f
+  var lastKnownLocation: Location? = null
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -89,7 +92,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
       if (initialStepCount == -1) {
         initialStepCount = it.toInt()
       }
-      numberOfStepTextView.text = "Step count: ${it.toInt() - initialStepCount}"
+      currentNumberOfStepCount = it.toInt() - initialStepCount
+      averagePaceTextView.text = "Average pace: ${totalDistanceTravelled / currentNumberOfStepCount.toDouble()} m/ step"
+      numberOfStepTextView.text = "Step count: $currentNumberOfStepCount"
     }
   }
 
@@ -115,7 +120,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
             Log.d("TAG", "New location got: (${it.latitude}, ${it.longitude})")
           }
 
+          locationResult.locations.forEach {
+            if (lastKnownLocation == null) {
+              lastKnownLocation = it
+              return@forEach
+            }
+            totalDistanceTravelled = totalDistanceTravelled + it.distanceTo(lastKnownLocation)
+          }
           addLocationToRoute(locationResult.locations)
+          totalDistanceTextView.text = "Total distance: ${totalDistanceTravelled}m"
+          if (currentNumberOfStepCount != 0) {
+            averagePaceTextView.text = "Average pace: ${totalDistanceTravelled / currentNumberOfStepCount} m/ step"
+          }
         }
       }
       fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
