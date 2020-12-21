@@ -38,8 +38,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     mapFragment.getMapAsync(this)
   }
 
+  @SuppressLint("MissingPermission")
   override fun onMapReady(googleMap: GoogleMap) {
     mMap = googleMap
+
+    runWithLocationPermissionChecking {
+      mMap.isMyLocationEnabled = true
+    }
 
     // Add a marker in Hong Kong and move the camera
     val latitude = 22.3193
