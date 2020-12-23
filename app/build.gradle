@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id 'kotlin-android-extensions'
+    id 'kotlin-kapt'
 }
 
 android {
@@ -9,7 +10,7 @@ android {
     buildToolsVersion "30.0.2"
 
     defaultConfig {
-        applicationId "com.rwRunTrackingApp"
+        applicationId "com.rwRunTrackingAppMyrick"
         minSdkVersion 26
         targetSdkVersion 30
         versionCode 1
@@ -51,4 +52,15 @@ dependencies {
 
     // FusedLocationProviderClient
     implementation 'com.google.android.gms:play-services-location:17.0.0'
+
+    // Room
+    def room_version = "2.2.5"
+    implementation "androidx.room:room-runtime:$room_version"
+    kapt "androidx.room:room-compiler:$room_version"
+
+    // Room (optional dependency) - Kotlin Extensions and Coroutines support for Room
+    implementation "androidx.room:room-ktx:$room_version"
+
+    // Coroutines
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.2.0'
 }
