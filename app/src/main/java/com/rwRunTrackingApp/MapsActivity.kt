@@ -108,7 +108,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         initialStepCount = it.toInt()
       }
       currentNumberOfStepCount = it.toInt() - initialStepCount
-      averagePaceTextView.text = "Average pace: ${totalDistanceTravelled / currentNumberOfStepCount.toDouble()} m/ step"
+      if (currentNumberOfStepCount != 0) {
+        averagePaceTextView.text = String.format("Average pace: %.2f m/ step", totalDistanceTravelled / currentNumberOfStepCount.toDouble())
+      }
       numberOfStepTextView.text = "Step count: $currentNumberOfStepCount"
     }
   }
@@ -144,9 +146,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
             addLocationToRoom(it)
           }
           addLocationToRoute(locationResult.locations)
-          totalDistanceTextView.text = "Total distance: ${totalDistanceTravelled}m"
+          totalDistanceTextView.text = String.format("Total distance: %.2fm", totalDistanceTravelled / currentNumberOfStepCount.toDouble())
           if (currentNumberOfStepCount != 0) {
-            averagePaceTextView.text = "Average pace: ${totalDistanceTravelled / currentNumberOfStepCount} m/ step"
+            averagePaceTextView.text = String.format("Average pace: %.2fm/ step", totalDistanceTravelled / currentNumberOfStepCount.toDouble())
           }
         }
       }
