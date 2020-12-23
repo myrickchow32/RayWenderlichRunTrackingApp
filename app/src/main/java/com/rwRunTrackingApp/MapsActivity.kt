@@ -13,6 +13,7 @@ import android.os.Bundle
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
 import androidx.room.Room
 import com.google.android.gms.location.*
@@ -113,6 +114,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
   }
 
   fun endButtonClicked() {
+    AlertDialog.Builder(this)
+      .setTitle("Are you sure to stop tracking?")
+      .setPositiveButton("Confirm") { dialog, which ->
+        stopTracking()
+      }.setNegativeButton("Cancel") { dialog, which ->
+      }
+      .create()
+      .show()
+  }
+
+  fun stopTracking() {
     lifecycleScope.launch { // coroutine on Main
       val deleteAction = async(Dispatchers.IO) {
         try {
@@ -136,7 +148,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     val stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
     sensorManager.unregisterListener(this, stepCounterSensor)
   }
-
   fun setupStepCounterListener() {
     val sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
     val stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
