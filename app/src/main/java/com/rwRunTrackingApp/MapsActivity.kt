@@ -47,6 +47,31 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     get() = this.getSharedPreferences(KEY_SHARED_PREFERENCE, Context.MODE_PRIVATE).getFloat(KEY_TOTAL_DISTANCE_TRAVELLED, 0f)
     set(value) = this.getSharedPreferences(KEY_SHARED_PREFERENCE, Context.MODE_PRIVATE).edit().putFloat(KEY_TOTAL_DISTANCE_TRAVELLED, value).apply()
 
+  val locationCallback = object: LocationCallback() {
+    override fun onLocationResult(locationResult: LocationResult?) {
+      super.onLocationResult(locationResult)
+      locationResult ?: return
+
+      locationResult.locations.forEach {
+        Log.d("TAG", "New location got: (${it.latitude}, ${it.longitude})")
+      }
+
+      locationResult.locations.forEach {
+        if (lastKnownLocation == null) {
+          lastKnownLocation = it
+          return@forEach
+        }
+        totalDistanceTravelled = totalDistanceTravelled + it.distanceTo(lastKnownLocation)
+        addLocationToRoom(it)
+      }
+      addLocationToRoute(locationResult.locations)
+      totalDistanceTextView.text = String.format("Total distance: %.2fm", totalDistanceTravelled / currentNumberOfStepCount.toDouble())
+      if (currentNumberOfStepCount != 0) {
+        averagePaceTextView.text = String.format("Average pace: %.2fm/ step", totalDistanceTravelled / currentNumberOfStepCount.toDouble())
+      }
+    }
+  }
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_maps)
@@ -103,6 +128,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         }
       }
     }
+
+    fusedLocationProviderClient.removeLocationUpdates(locationCallback)
   }
 
   fun setupStepCounterListener() {
@@ -145,31 +172,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     runWithLocationPermissionChecking {
       val locationRequest = LocationRequest()
       locationRequest.interval = 5000
-
-      val locationCallback = object: LocationCallback() {
-        override fun onLocationResult(locationResult: LocationResult?) {
-          super.onLocationResult(locationResult)
-          locationResult ?: return
-
-          locationResult.locations.forEach {
-            Log.d("TAG", "New location got: (${it.latitude}, ${it.longitude})")
-          }
-
-          locationResult.locations.forEach {
-            if (lastKnownLocation == null) {
-              lastKnownLocation = it
-              return@forEach
-            }
-            totalDistanceTravelled = totalDistanceTravelled + it.distanceTo(lastKnownLocation)
-            addLocationToRoom(it)
-          }
-          addLocationToRoute(locationResult.locations)
-          totalDistanceTextView.text = String.format("Total distance: %.2fm", totalDistanceTravelled / currentNumberOfStepCount.toDouble())
-          if (currentNumberOfStepCount != 0) {
-            averagePaceTextView.text = String.format("Average pace: %.2fm/ step", totalDistanceTravelled / currentNumberOfStepCount.toDouble())
-          }
-        }
-      }
       fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
     }
   }
