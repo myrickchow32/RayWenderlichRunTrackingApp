@@ -130,6 +130,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     }
 
     fusedLocationProviderClient.removeLocationUpdates(locationCallback)
+
+    // Unregister step sensor listener
+    val sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+    val stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+    sensorManager.unregisterListener(this, stepCounterSensor)
   }
 
   fun setupStepCounterListener() {
