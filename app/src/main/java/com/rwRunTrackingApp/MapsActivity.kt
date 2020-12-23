@@ -40,13 +40,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
   val KEY_SHARED_PREFERENCE = "com.rwRunTrackingApp.KEY_SHARED_PREFERENCE"
   val KEY_INITIAL_STEP_COUNT = "com.rwRunTrackingApp.KEY_CURRENT_NUMBER_OF_STEP_COUNT"
   val KEY_TOTAL_DISTANCE_TRAVELLED = "com.rwRunTrackingApp.KEY_TOTAL_DISTANCE_TRAVELLED"
+  val KEY_IS_TRACKING = "com.rwRunTrackingApp.KEY_IS_TRACKING"
   var initialStepCount: Int
     get() = this.getSharedPreferences(KEY_SHARED_PREFERENCE, Context.MODE_PRIVATE).getInt(KEY_INITIAL_STEP_COUNT, -1)
     set(value) = this.getSharedPreferences(KEY_SHARED_PREFERENCE, Context.MODE_PRIVATE).edit().putInt(KEY_INITIAL_STEP_COUNT, value).apply()
   var currentNumberOfStepCount = 0
-     var totalDistanceTravelled: Float
+  var totalDistanceTravelled: Float
     get() = this.getSharedPreferences(KEY_SHARED_PREFERENCE, Context.MODE_PRIVATE).getFloat(KEY_TOTAL_DISTANCE_TRAVELLED, 0f)
     set(value) = this.getSharedPreferences(KEY_SHARED_PREFERENCE, Context.MODE_PRIVATE).edit().putFloat(KEY_TOTAL_DISTANCE_TRAVELLED, value).apply()
+
+  var isTracking: Boolean
+    get() = this.getSharedPreferences(KEY_SHARED_PREFERENCE, Context.MODE_PRIVATE).getBoolean(KEY_IS_TRACKING, false)
+    set(value) = this.getSharedPreferences(KEY_SHARED_PREFERENCE, Context.MODE_PRIVATE).edit().putBoolean(KEY_IS_TRACKING, value).apply()
 
   val locationCallback = object: LocationCallback() {
     override fun onLocationResult(locationResult: LocationResult?) {
@@ -78,6 +83,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     setContentView(R.layout.activity_maps)
     fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
     appDatabase = Room.databaseBuilder(applicationContext, AppDatabase::class.java, "database-name").build()
+    updateButtonStatus()
 
     startButton.setOnClickListener { startButtonClicked() }
     endButton.setOnClickListener { endButtonClicked() }
@@ -103,6 +109,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
   }
 
   fun startButtonClicked() {
+    isTracking = true
+    updateButtonStatus()
     RxPermissions(this).request(Manifest.permission.ACTIVITY_RECOGNITION)
       .subscribe { isGranted ->
         Log.d("TAG", "Is ACTIVITY_RECOGNITION permission granted: $isGranted")
@@ -117,11 +125,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     AlertDialog.Builder(this)
       .setTitle("Are you sure to stop tracking?")
       .setPositiveButton("Confirm") { dialog, which ->
+        isTracking = false
+        updateButtonStatus()
         stopTracking()
       }.setNegativeButton("Cancel") { dialog, which ->
       }
       .create()
       .show()
+  }
+
+  fun updateButtonStatus() {
+    startButton.isEnabled = !isTracking
+    endButton.isEnabled = isTracking
   }
 
   fun stopTracking() {
