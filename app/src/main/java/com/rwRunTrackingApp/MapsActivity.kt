@@ -28,7 +28,6 @@ import kotlinx.android.synthetic.main.activity_maps.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import java.util.*
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListener {
   lateinit var appDatabase: AppDatabase
@@ -55,6 +54,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     appDatabase = Room.databaseBuilder(applicationContext, AppDatabase::class.java, "database-name").build()
 
     startButton.setOnClickListener { startButtonClicked() }
+    endButton.setOnClickListener { endButtonClicked() }
     val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
     mapFragment.getMapAsync(this)
   }
@@ -85,6 +85,24 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         }
       }
     setupLocationChangeListener()
+  }
+
+  fun endButtonClicked() {
+    lifecycleScope.launch { // coroutine on Main
+      val deleteAction = async(Dispatchers.IO) {
+        try {
+          val originalTrackingRecordList = appDatabase.trackingDao().getAll()
+          Log.d("TAG", "Original number of data: ${originalTrackingRecordList.size}")
+
+          appDatabase.trackingDao().delete()
+
+          val newTrackingRecordList = appDatabase.trackingDao().getAll()
+          Log.d("TAG", "New Number of data: ${newTrackingRecordList.size}")
+        } catch (error: Exception) {
+          error.localizedMessage
+        }
+      }
+    }
   }
 
   fun setupStepCounterListener() {
