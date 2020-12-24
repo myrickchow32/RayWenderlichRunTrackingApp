@@ -71,7 +71,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         addLocationToRoom(it)
       }
       addLocationToRoute(locationResult.locations)
-      totalDistanceTextView.text = String.format("Total distance: %.2fm", totalDistanceTravelled / currentNumberOfStepCount.toDouble())
+      totalDistanceTextView.text = String.format("Total distance: %.2fm", totalDistanceTravelled)
       if (currentNumberOfStepCount != 0) {
         averagePaceTextView.text = String.format("Average pace: %.2fm/ step", totalDistanceTravelled / currentNumberOfStepCount.toDouble())
       }
@@ -81,14 +81,31 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_maps)
-    fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
-    appDatabase = Room.databaseBuilder(applicationContext, AppDatabase::class.java, "database-name").build()
-    updateButtonStatus()
-
-    startButton.setOnClickListener { startButtonClicked() }
-    endButton.setOnClickListener { endButtonClicked() }
     val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
     mapFragment.getMapAsync(this)
+
+    fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
+    appDatabase = Room.databaseBuilder(applicationContext, AppDatabase::class.java, "database-name").build()
+    startButton.setOnClickListener {
+      isTracking = true
+      // Clear previous local data
+      initialStepCount = -1
+      currentNumberOfStepCount = 0
+      totalDistanceTravelled = 0f
+
+      updateButtonStatus()
+      updateAllDisplayText()
+
+      startButtonClicked()
+    }
+    endButton.setOnClickListener { endButtonClicked() }
+
+    updateButtonStatus()
+    updateAllDisplayText()
+
+    if (isTracking) {
+      startButtonClicked()
+    }
   }
 
   @SuppressLint("MissingPermission")
@@ -109,8 +126,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
   }
 
   fun startButtonClicked() {
-    isTracking = true
-    updateButtonStatus()
     RxPermissions(this).request(Manifest.permission.ACTIVITY_RECOGNITION)
       .subscribe { isGranted ->
         Log.d("TAG", "Is ACTIVITY_RECOGNITION permission granted: $isGranted")
@@ -137,6 +152,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
   fun updateButtonStatus() {
     startButton.isEnabled = !isTracking
     endButton.isEnabled = isTracking
+  }
+
+  fun updateAllDisplayText() {
+    numberOfStepTextView.text = "Step count: $currentNumberOfStepCount"
+    totalDistanceTextView.text = String.format("Total distance: %.2fm", totalDistanceTravelled)
+
+    val averagePace = if (currentNumberOfStepCount != 0) totalDistanceTravelled / currentNumberOfStepCount.toDouble() else 0.0
+    averagePaceTextView.text = String.format("Average pace: %.2fm/ step", averagePace)
   }
 
   fun stopTracking() {
