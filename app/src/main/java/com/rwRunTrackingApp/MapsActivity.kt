@@ -71,10 +71,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         addLocationToRoom(it)
       }
       addLocationToRoute(locationResult.locations)
-      totalDistanceTextView.text = String.format("Total distance: %.2fm", totalDistanceTravelled)
-      if (currentNumberOfStepCount != 0) {
-        averagePaceTextView.text = String.format("Average pace: %.2fm/ step", totalDistanceTravelled / currentNumberOfStepCount.toDouble())
-      }
+      updateAllDisplayText()
     }
   }
 
