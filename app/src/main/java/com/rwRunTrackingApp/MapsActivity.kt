@@ -102,6 +102,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
     updateButtonStatus()
     updateAllDisplayText()
+    initMapRoute()
 
     if (isTracking) {
       startButtonClicked()
@@ -162,6 +163,27 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     averagePaceTextView.text = String.format("Average pace: %.2fm/ step", averagePace)
   }
 
+  fun initMapRoute() {
+    lifecycleScope.launch { // coroutine on Main
+      async(Dispatchers.IO) {
+        try {
+          val originalTrackingRecordList = appDatabase.trackingDao().getAll()
+          val locationList = originalTrackingRecordList.map { trackingRecord ->
+            Location("").also {
+              it.latitude = trackingRecord.latitude
+              it.longitude = trackingRecord.longitude
+            }
+          }
+          runOnUiThread{
+            addLocationToRoute(locationList)
+          }
+        } catch (error: Exception) {
+          error.localizedMessage
+        }
+      }
+    }
+  }
+
   fun stopTracking() {
     lifecycleScope.launch { // coroutine on Main
       val deleteAction = async(Dispatchers.IO) {
@@ -186,6 +208,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     val stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
     sensorManager.unregisterListener(this, stepCounterSensor)
   }
+
   fun setupStepCounterListener() {
     val sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
     val stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
