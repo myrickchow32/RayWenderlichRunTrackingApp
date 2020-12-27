@@ -23,6 +23,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.PolygonOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.activity_maps.*
@@ -35,7 +36,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
   lateinit var mMap: GoogleMap
 
   lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-  val polylineOptions = PolylineOptions()
+  var polylineOptions = PolylineOptions()
   var lastKnownLocation: Location? = null
   val KEY_SHARED_PREFERENCE = "com.rwRunTrackingApp.KEY_SHARED_PREFERENCE"
   val KEY_INITIAL_STEP_COUNT = "com.rwRunTrackingApp.KEY_CURRENT_NUMBER_OF_STEP_COUNT"
@@ -89,6 +90,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
       initialStepCount = -1
       currentNumberOfStepCount = 0
       totalDistanceTravelled = 0f
+      polylineOptions = PolylineOptions()
+      mMap.clear()
 
       updateButtonStatus()
       updateAllDisplayText()
